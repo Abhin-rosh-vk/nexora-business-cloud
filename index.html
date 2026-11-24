@@ -1,0 +1,1825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEXORA Business Cloud — Interactive Stage 1 & 2 Prototype</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter (Corporate/UI), Playfair Display (Hospitality Serif), JetBrains Mono (Automotive/Manufacturing) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            nexora: {
+              navy: '#101C32',
+              blue: '#276EF1',
+              teal: '#16B8A6',
+              cloud: '#F4F6FA',
+              graphite: '#303846',
+              grey: '#8993A4',
+            },
+            hosp: {
+              forest: '#173D35',
+              forestLight: '#215247',
+              gold: '#C5A66A',
+              goldLight: '#D8BE8B',
+              ivory: '#F7F4EC',
+              sand: '#E7DED0',
+              charcoal: '#292E2C',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbar & subtle utility styles */
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F4F6FA;
+      color: #101C32;
+      overflow-x: hidden;
+    }
+    .glass-panel {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    /* Smooth view transitions */
+    .view-section {
+      animation: fadeIn 0.28s ease-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Custom subtle pattern for architectural depth */
+    .bg-grid-slate {
+      background-size: 32px 32px;
+      background-image: linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                        linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-[#276EF1] selection:text-white">
+
+  <!-- ===================================================================== -->
+  <!-- TOP PROTOTYPE & EXPERIENCE SWITCHER BAR (ALWAYS ACCESSIBLE)           -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-50 bg-[#0B1324] text-white border-b border-white/10 shadow-lg">
+    <!-- Stage 1 & 2 Transparency Notice -->
+    <div class="bg-gradient-to-r from-[#101C32] via-[#173D35] to-[#101C32] px-4 py-1.5 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-white/10">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#16B8A6]/20 text-[#16B8A6] font-semibold tracking-wide text-[11px] border border-[#16B8A6]/30">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#16B8A6] animate-pulse"></span>
+          STAGE 1 &amp; 2 INTERACTIVE MVP
+        </span>
+        <span class="text-slate-300 hidden sm:inline">Browser LocalStorage persistence active — ready for PostgreSQL + NestJS backend connection.</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="resetDemoDatabase()" class="text-[11px] text-amber-300 hover:text-amber-200 underline underline-offset-2 transition cursor-pointer" title="Reset sample rooms, bookings, and tenants to defaults">
+          Reset Demo Data
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Experience Switcher Navigation -->
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex flex-col lg:flex-row items-center justify-between gap-3">
+      <!-- Brand Identity -->
+      <div class="flex items-center justify-between w-full lg:w-auto">
+        <button onclick="switchExperience('corporate')" class="flex items-center gap-2.5 text-left group cursor-pointer">
+          <!-- Custom Geometric N-Symbol SVG -->
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#276EF1] to-[#16B8A6] p-0.5 shadow-md shadow-[#276EF1]/20">
+            <div class="w-full h-full bg-[#101C32] rounded-[10px] flex items-center justify-center">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                <path d="M5 19V5L13.5 14.5V5" stroke="#276EF1" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M10.5 19V9.5L19 19V5" stroke="#16B8A6" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-extrabold tracking-tight text-base text-white">NEXORA</span>
+              <span class="text-[10px] uppercase tracking-widest px-1.5 py-0.5 rounded bg-white/10 text-slate-300 font-semibold">Cloud</span>
+            </div>
+            <p class="text-[11px] text-slate-400 leading-none">Universal Business Cloud</p>
+          </div>
+        </button>
+
+        <!-- Active Tenant Pill (Mobile) -->
+        <div class="lg:hidden text-xs bg-white/10 px-2.5 py-1 rounded-lg text-slate-200" id="mobileActiveTenantBadge">
+          Malabar Hospitality Group
+        </div>
+      </div>
+
+      <!-- 4 Core Experience Switchers -->
+      <nav class="flex flex-wrap items-center justify-center gap-1.5 bg-white/5 p-1 rounded-xl border border-white/10 w-full lg:w-auto" aria-label="Experience Switcher">
+        <button onclick="switchExperience('corporate')" id="nav-corporate" class="exp-tab px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer bg-[#276EF1] text-white shadow">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+          <span>1. Corporate Website</span>
+        </button>
+
+        <button onclick="switchExperience('hospitality')" id="nav-hospitality" class="exp-tab px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white hover:bg-white/10">
+          <span class="w-2 h-2 rounded-full bg-[#C5A66A]"></span>
+          <span>2. Nexora Hospitality (Live MVP)</span>
+        </button>
+
+        <button onclick="switchExperience('verticals')" id="nav-verticals" class="exp-tab px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white hover:bg-white/10">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+          <span>3. 7 Industry Systems</span>
+        </button>
+
+        <button onclick="switchExperience('superadmin')" id="nav-superadmin" class="exp-tab px-3 py-2 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer text-slate-300 hover:text-white hover:bg-white/10">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          <span>4. Platform Super Admin</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Toast Notification Container (Replaces alert()) -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN CONTENT VIEWPORT                                                 -->
+  <!-- ===================================================================== -->
+  <main class="flex-1">
+
+    <!-- =================================================================== -->
+    <!-- VIEW 1: NEXORA CORPORATE WEBSITE (PHASE 1)                          -->
+    <!-- =================================================================== -->
+    <section id="view-corporate" class="view-section">
+      <!-- Hero Section -->
+      <div class="bg-[#101C32] bg-grid-slate text-white relative overflow-hidden border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 relative z-10">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div class="lg:col-span-7 space-y-6">
+              <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#276EF1]/15 border border-[#276EF1]/40 text-xs font-semibold text-[#7BA8FF]">
+                <span class="w-2 h-2 rounded-full bg-[#16B8A6]"></span>
+                Multi-Tenant Enterprise SaaS Architecture
+              </div>
+              <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1]">
+                One ecosystem.<br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#276EF1] to-[#16B8A6]">Every operation.</span><br/>
+                Smarter decisions.
+              </h1>
+              <p class="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed">
+                NEXORA Business Cloud unifies ERP, CRM, Property Management, POS, and Clinical Operations under one secure multi-tenant backbone—delivering seven purpose-built industry applications with dedicated workflows and design languages.
+              </p>
+              <div class="flex flex-wrap items-center gap-4 pt-2">
+                <button onclick="openRegisterOrgModal()" class="px-6 py-3.5 rounded-xl bg-[#276EF1] hover:bg-[#1d5bd6] text-white font-semibold text-sm shadow-lg shadow-[#276EF1]/30 transition flex items-center gap-2 cursor-pointer">
+                  <span>Launch Workspace / Register Org</span>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                </button>
+                <button onclick="switchExperience('hospitality')" class="px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white font-semibold text-sm transition flex items-center gap-2 cursor-pointer">
+                  <span class="w-2 h-2 rounded-full bg-[#C5A66A]"></span>
+                  <span>Explore Live Hospitality MVP</span>
+                </button>
+              </div>
+
+              <!-- Trust / Architecture Pills -->
+              <div class="grid grid-cols-3 gap-4 pt-6 border-t border-white/10 max-w-xl">
+                <div>
+                  <div class="text-2xl font-bold text-white">7</div>
+                  <div class="text-xs text-slate-400">Specialised Verticals</div>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-[#16B8A6]">RLS + RBAC</div>
+                  <div class="text-xs text-slate-400">Strict Tenant Isolation</div>
+                </div>
+                <div>
+                  <div class="text-2xl font-bold text-white">Phase 2</div>
+                  <div class="text-xs text-slate-400">Hospitality MVP Active</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Interactive Architecture Card -->
+            <div class="lg:col-span-5">
+              <div class="bg-[#16243E] border border-white/10 rounded-2xl p-6 shadow-2xl space-y-5">
+                <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                  <div>
+                    <span class="text-[11px] font-mono uppercase tracking-wider text-[#16B8A6]">Unified Platform Core</span>
+                    <h3 class="text-lg font-bold text-white">NEXORA Modular Monolith</h3>
+                  </div>
+                  <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 text-xs font-semibold border border-emerald-500/30">v1.2 Operational</span>
+                </div>
+
+                <!-- Shared Services Layer -->
+                <div class="space-y-2">
+                  <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Shared Multi-Tenant Kernel</div>
+                  <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="p-2.5 rounded-xl bg-[#101C32] border border-white/10 flex items-center gap-2">
+                      <span class="w-2 h-2 rounded-full bg-[#276EF1]"></span>
+                      <span>Identity &amp; SSO Auth</span>
+                    </div>
+                    <div class="p-2.5 rounded-xl bg-[#101C32] border border-white/10 flex items-center gap-2">
+                      <span class="w-2 h-2 rounded-full bg-[#16B8A6]"></span>
+                      <span>Org &amp; Branch Isolation</span>
+                    </div>
+                    <div class="p-2.5 rounded-xl bg-[#101C32] border border-white/10 flex items-center gap-2">
+                      <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                      <span>Subscription &amp; Billing</span>
+                    </div>
+                    <div class="p-2.5 rounded-xl bg-[#101C32] border border-white/10 flex items-center gap-2">
+                      <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                      <span>Audit Logs &amp; RBAC</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Industry Applications Routing -->
+                <div class="space-y-2">
+                  <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Industry Application Layer</div>
+                  <div class="p-3 rounded-xl bg-gradient-to-r from-[#173D35] to-[#215247] border border-[#C5A66A]/40 flex items-center justify-between">
+                    <div>
+                      <div class="text-xs font-bold text-[#F7F4EC]">Nexora Hospitality</div>
+                      <div class="text-[11px] text-[#C5A66A]">PMS, Front Desk, Housekeeping &amp; Billing</div>
+                    </div>
+                    <button onclick="switchExperience('hospitality')" class="px-3 py-1.5 rounded-lg bg-[#C5A66A] text-[#173D35] font-bold text-xs hover:bg-[#D8BE8B] transition cursor-pointer">
+                      Open App →
+                    </button>
+                  </div>
+                  <div class="p-3 rounded-xl bg-[#101C32]/80 border border-white/10 flex items-center justify-between">
+                    <div>
+                      <div class="text-xs font-semibold text-slate-200">6 Additional Industry Suites</div>
+                      <div class="text-[11px] text-slate-400">Education, Restaurant, Auto, Mfg, Business, Health</div>
+                    </div>
+                    <button onclick="switchExperience('verticals')" class="px-3 py-1.5 rounded-lg bg-white/10 text-white font-semibold text-xs hover:bg-white/20 transition cursor-pointer">
+                      Inspect UI
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7 Industry Verticals Grid -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+          <div>
+            <span class="text-xs font-bold uppercase tracking-widest text-[#276EF1]">Purpose-Built Verticals</span>
+            <h2 class="text-3xl font-extrabold text-[#101C32] mt-1">Seven Distinct Industry Applications</h2>
+            <p class="text-sm text-[#303846] mt-2 max-w-2xl">
+              Unlike generic ERPs that simply re-skin a single dashboard, every NEXORA application has its own typography, color psychology, domain workflows, and data models.
+            </p>
+          </div>
+          <button onclick="switchExperience('verticals')" class="text-sm font-semibold text-[#276EF1] hover:underline flex items-center gap-1 cursor-pointer">
+            Compare all 7 visual design systems →
+          </button>
+        </div>
+
+        <div id="corporateVerticalsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <!-- Populated dynamically from VERTICAL_SYSTEMS -->
+        </div>
+      </div>
+
+      <!-- Transparent Subscription Tiers -->
+      <div class="bg-white border-t border-slate-200 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center max-w-2xl mx-auto mb-12">
+            <span class="text-xs font-bold uppercase tracking-widest text-[#16B8A6]">Commercial Engine</span>
+            <h2 class="text-3xl font-extrabold text-[#101C32] mt-1">Transparent Multi-Branch Licensing</h2>
+            <p class="text-sm text-[#303846] mt-2">
+              Start with a 14-day full-featured trial. Scale across branches, staff seats, and industry modules without migrating platforms.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <!-- Starter -->
+            <div class="rounded-2xl border border-slate-200 p-7 bg-[#F4F6FA]/60 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-lg font-bold text-[#101C32]">Starter</h3>
+                  <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-200 text-slate-700">Single Property</span>
+                </div>
+                <div class="mt-4 flex items-baseline gap-1">
+                  <span class="text-3xl font-extrabold text-[#101C32]">₹3,999</span>
+                  <span class="text-xs text-slate-500">/ month</span>
+                </div>
+                <p class="text-xs text-slate-600 mt-2">Ideal for boutique hotels, independent clinics, and single-location operators.</p>
+                <ul class="mt-6 space-y-2.5 text-xs text-[#303846]">
+                  <li class="flex items-center gap-2"><span class="text-[#16B8A6] font-bold">✓</span> 1 Active Industry Application</li>
+                  <li class="flex items-center gap-2"><span class="text-[#16B8A6] font-bold">✓</span> 1 Branch / Property Location</li>
+                  <li class="flex items-center gap-2"><span class="text-[#16B8A6] font-bold">✓</span> Up to 10 Staff Users with RBAC</li>
+                  <li class="flex items-center gap-2"><span class="text-[#16B8A6] font-bold">✓</span> Core Operations, Billing &amp; Reports</li>
+                </ul>
+              </div>
+              <button onclick="openRegisterOrgModal('Starter')" class="mt-8 w-full py-3 rounded-xl border border-[#101C32] text-[#101C32] font-semibold text-xs hover:bg-[#101C32] hover:text-white transition cursor-pointer">
+                Start Starter Trial
+              </button>
+            </div>
+
+            <!-- Professional -->
+            <div class="rounded-2xl border-2 border-[#276EF1] p-7 bg-white shadow-xl relative flex flex-col justify-between">
+              <div class="absolute -top-3 right-6 bg-[#276EF1] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+                Most Popular
+              </div>
+              <div>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-lg font-bold text-[#101C32]">Professional</h3>
+                  <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#276EF1]/10 text-[#276EF1]">Multi-Branch</span>
+                </div>
+                <div class="mt-4 flex items-baseline gap-1">
+                  <span class="text-3xl font-extrabold text-[#101C32]">₹9,999</span>
+                  <span class="text-xs text-slate-500">/ month</span>
+                </div>
+                <p class="text-xs text-slate-600 mt-2">Built for growing hospitality groups, multi-branch restaurants, and regional enterprises.</p>
+                <ul class="mt-6 space-y-2.5 text-xs text-[#303846]">
+                  <li class="flex items-center gap-2"><span class="text-[#276EF1] font-bold">✓</span> Up to 2 Industry Applications</li>
+                  <li class="flex items-center gap-2"><span class="text-[#276EF1] font-bold">✓</span> Up to 5 Branches / Properties</li>
+                  <li class="flex items-center gap-2"><span class="text-[#276EF1] font-bold">✓</span> Up to 50 Staff Users &amp; Custom Roles</li>
+                  <li class="flex items-center gap-2"><span class="text-[#276EF1] font-bold">✓</span> Cross-Branch Analytics &amp; Audit Logs</li>
+                </ul>
+              </div>
+              <button onclick="openRegisterOrgModal('Professional')" class="mt-8 w-full py-3 rounded-xl bg-[#276EF1] text-white font-semibold text-xs hover:bg-[#1d5bd6] shadow-md transition cursor-pointer">
+                Launch Professional Workspace
+              </button>
+            </div>
+
+            <!-- Enterprise -->
+            <div class="rounded-2xl border border-slate-200 p-7 bg-[#101C32] text-white flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between">
+                  <h3 class="text-lg font-bold">Enterprise</h3>
+                  <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-[#16B8A6]/20 text-[#16B8A6]">Unlimited Scale</span>
+                </div>
+                <div class="mt-4 flex items-baseline gap-1">
+                  <span class="text-3xl font-extrabold">Custom</span>
+                  <span class="text-xs text-slate-400">/ annual</span>
+                </div>
+                <p class="text-xs text-slate-300 mt-2">Dedicated PostgreSQL row-level isolation, SSO, custom compliance, and unlimited branches.</p>
+                <ul class="mt-6 space-y-2.5 text-xs text-slate-200">
+                  <li class="flex items-center gap-2"><span class="text-[#16B8A6] font-bold">✓</span> All 7 Industry Suites Enabled</li>
+                  <li class="flex items-center gap-2"><span class="text-[#16B8A6] font-bold">✓</span> Unlimited Branches &amp; Users</li>
+                  <li class="flex items-center gap-2"><span class="text-[#16B8A6] font-bold">✓</span> Dedicated Schema / RLS Enforcement</li>
+                  <li class="flex items-center gap-2"><span class="text-[#16B8A6] font-bold">✓</span> SLA, Automated Backups &amp; API Access</li>
+                </ul>
+              </div>
+              <button onclick="openRegisterOrgModal('Enterprise')" class="mt-8 w-full py-3 rounded-xl bg-white text-[#101C32] font-semibold text-xs hover:bg-slate-100 transition cursor-pointer">
+                Provision Enterprise Tenant
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 2: NEXORA HOSPITALITY MVP (PHASE 2 LIVE INTERACTIVE APP)       -->
+    <!-- =================================================================== -->
+    <section id="view-hospitality" class="view-section hidden min-h-[calc(100vh-105px)] bg-[#F7F4EC] text-[#292E2C]">
+      <!-- Hospitality Branded Header Bar -->
+      <div class="bg-[#173D35] text-[#F7F4EC] border-b border-[#C5A66A]/30 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5">
+            <div class="w-11 h-11 rounded-xl bg-[#215247] border border-[#C5A66A]/50 flex items-center justify-center text-[#C5A66A] font-serif text-xl font-bold shadow-inner">
+              H
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-serif text-xl font-semibold tracking-wide text-[#F7F4EC]">Nexora Hospitality</span>
+                <span class="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded bg-[#C5A66A]/20 text-[#C5A66A] border border-[#C5A66A]/40 font-sans font-semibold">
+                  Phase 2 Live PMS
+                </span>
+              </div>
+              <p class="text-xs text-[#E7DED0]/80 italic font-serif">“Exceptional Stays. Intelligent Operations.”</p>
+            </div>
+          </div>
+
+          <!-- Multi-Property / Branch Selector & Quick Action -->
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="bg-[#215247] border border-[#C5A66A]/40 rounded-xl px-3 py-1.5 flex items-center gap-2">
+              <span class="text-[11px] uppercase tracking-wider text-[#C5A66A] font-semibold">Property:</span>
+              <select id="hospPropertySelector" onchange="switchHospitalityProperty(this.value)" class="bg-transparent text-xs sm:text-sm font-semibold text-[#F7F4EC] focus:outline-none cursor-pointer">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <button onclick="openReservationModal()" class="px-4 py-2.5 rounded-xl bg-[#C5A66A] hover:bg-[#D8BE8B] text-[#173D35] font-bold text-xs sm:text-sm shadow-md transition flex items-center gap-2 cursor-pointer">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M12 4v16m8-8H4"/></svg>
+              <span>New Reservation</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Hospitality Sub-Navigation Tabs -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-2 overflow-x-auto pb-0">
+          <button onclick="switchHospTab('frontdesk')" id="htab-frontdesk" class="hosp-subtab px-4 py-2.5 text-xs font-semibold border-b-2 border-[#C5A66A] text-[#C5A66A] whitespace-nowrap cursor-pointer">
+            Front Desk &amp; Room Inventory
+          </button>
+          <button onclick="switchHospTab('reservations')" id="htab-reservations" class="hosp-subtab px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent text-[#E7DED0]/75 hover:text-white whitespace-nowrap cursor-pointer">
+            Reservations &amp; Guest Check-In/Out
+          </button>
+          <button onclick="switchHospTab('housekeeping')" id="htab-housekeeping" class="hosp-subtab px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent text-[#E7DED0]/75 hover:text-white whitespace-nowrap cursor-pointer">
+            Housekeeping Queue
+          </button>
+          <button onclick="switchHospTab('billing')" id="htab-billing" class="hosp-subtab px-4 py-2.5 text-xs font-semibold border-b-2 border-transparent text-[#E7DED0]/75 hover:text-white whitespace-nowrap cursor-pointer">
+            Billing &amp; Revenue Ledger
+          </button>
+        </div>
+      </div>
+
+      <!-- Hospitality KPI Strip -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="hospKpiStrip">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <!-- Hospitality Main Workspace -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <!-- TAB 1: FRONT DESK & ROOM INVENTORY BOARD -->
+        <div id="hosp-panel-frontdesk" class="hosp-panel space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#EFECE3] border border-[#E7DED0] rounded-2xl p-4">
+            <div>
+              <h2 class="font-serif text-xl font-bold text-[#173D35]">Live Room Inventory &amp; Status Board</h2>
+              <p class="text-xs text-[#292E2C]/75">Click a status pill on any room to update readiness, or book an available suite directly. Overlap protection is active.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 text-xs">
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 font-medium"><span class="w-2 h-2 rounded-full bg-emerald-600"></span> Available</span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 font-medium"><span class="w-2 h-2 rounded-full bg-amber-600"></span> Occupied</span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sky-100 text-sky-900 font-medium"><span class="w-2 h-2 rounded-full bg-sky-600"></span> Cleaning</span>
+              <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-100 text-rose-900 font-medium"><span class="w-2 h-2 rounded-full bg-rose-600"></span> Maintenance</span>
+            </div>
+          </div>
+
+          <div id="hospRoomGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- TAB 2: RESERVATIONS & GUEST WORKFLOW -->
+        <div id="hosp-panel-reservations" class="hosp-panel hidden space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="font-serif text-xl font-bold text-[#173D35]">Guest Reservations &amp; Front Desk Lifecycle</h2>
+              <p class="text-xs text-[#292E2C]/75">Manage Confirmed arrivals, Check-In guests into their assigned rooms, and execute Check-Out (auto-triggering Housekeeping).</p>
+            </div>
+            <button onclick="openReservationModal()" class="px-4 py-2 rounded-xl bg-[#173D35] text-[#F7F4EC] text-xs font-semibold hover:bg-[#215247] transition cursor-pointer self-start">
+              + Create Reservation
+            </button>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-[#E7DED0] shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-[#EFECE3] text-[#173D35] text-[11px] uppercase tracking-wider border-b border-[#E7DED0]">
+                    <th class="py-3.5 px-4 font-bold">Booking ID &amp; Guest</th>
+                    <th class="py-3.5 px-4 font-bold">Suite / Room</th>
+                    <th class="py-3.5 px-4 font-bold">Stay Dates</th>
+                    <th class="py-3.5 px-4 font-bold">Total &amp; Payment</th>
+                    <th class="py-3.5 px-4 font-bold">Stay Status</th>
+                    <th class="py-3.5 px-4 font-bold text-right">Workflow Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="hospReservationsTable" class="divide-y divide-[#E7DED0] text-xs">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: HOUSEKEEPING QUEUE -->
+        <div id="hosp-panel-housekeeping" class="hosp-panel hidden space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="font-serif text-xl font-bold text-[#173D35]">Housekeeping &amp; Room Turnover Queue</h2>
+              <p class="text-xs text-[#292E2C]/75">Rooms checked out automatically enter turnover cleaning. Marking a task complete returns the room to Available inventory.</p>
+            </div>
+          </div>
+
+          <div id="hospHousekeepingList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- TAB 4: BILLING & REVENUE LEDGER -->
+        <div id="hosp-panel-billing" class="hosp-panel hidden space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 class="font-serif text-xl font-bold text-[#173D35]">Guest Billing, Folios &amp; Payment Ledger</h2>
+              <p class="text-xs text-[#292E2C]/75">Real-time folio settlements, GST breakdown, and payment mode tracking.</p>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-[#E7DED0] shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-[#EFECE3] text-[#173D35] text-[11px] uppercase tracking-wider border-b border-[#E7DED0]">
+                    <th class="py-3.5 px-4 font-bold">Invoice #</th>
+                    <th class="py-3.5 px-4 font-bold">Guest Name</th>
+                    <th class="py-3.5 px-4 font-bold">Room &amp; Nights</th>
+                    <th class="py-3.5 px-4 font-bold">Subtotal + 12% GST</th>
+                    <th class="py-3.5 px-4 font-bold">Payment Status</th>
+                    <th class="py-3.5 px-4 font-bold text-right">Settlement</th>
+                  </tr>
+                </thead>
+                <tbody id="hospBillingTable" class="divide-y divide-[#E7DED0] text-xs">
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 3: 7 INDUSTRY DESIGN SYSTEMS SWITCHER                          -->
+    <!-- =================================================================== -->
+    <section id="view-verticals" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-widest text-[#276EF1]">Design Architecture Showcase</span>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-[#101C32] mt-1">7 Independent Industry Design Languages</h1>
+          <p class="text-sm text-[#303846] mt-1 max-w-3xl">
+            Select any vertical below to see how NEXORA transforms its visual identity, typography, navigation structure, and domain metrics while running on the same multi-tenant engine.
+          </p>
+        </div>
+      </div>
+
+      <!-- 7 Vertical Selector Pills -->
+      <div id="verticalSelectorBar" class="flex flex-wrap gap-2">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Dynamic Industry Preview Canvas -->
+      <div id="verticalPreviewCanvas" class="rounded-3xl overflow-hidden shadow-2xl border border-slate-200 transition-all duration-300">
+        <!-- Populated dynamically -->
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- VIEW 4: PLATFORM OWNER CONTROL CENTRE (SUPER ADMIN)                 -->
+    <!-- =================================================================== -->
+    <section id="view-superadmin" class="view-section hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <div class="bg-[#101C32] text-white rounded-2xl p-6 sm:p-8 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-amber-500/20 text-amber-300 text-xs font-semibold border border-amber-500/30 mb-2">
+            PRIVILEGED PLATFORM OPERATOR CONSOLE
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold">NEXORA Central Control Centre</h1>
+          <p class="text-xs sm:text-sm text-slate-300 mt-1">
+            Manage multi-tenant organisations, subscription plans, branch quotas, industry entitlements, and security audit trails.
+          </p>
+        </div>
+        <button onclick="openRegisterOrgModal()" class="px-5 py-3 rounded-xl bg-[#16B8A6] hover:bg-[#13a191] text-[#101C32] font-bold text-xs sm:text-sm transition cursor-pointer self-start md:self-auto">
+          + Provision New Tenant
+        </button>
+      </div>
+
+      <!-- Platform KPIs -->
+      <div id="superAdminKpis" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Registered Tenants Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-[#101C32]">Registered Multi-Tenant Organisations</h2>
+            <p class="text-xs text-slate-500">Every organisation is strictly isolated via Tenant ID and RBAC policies.</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-slate-600 text-[11px] uppercase tracking-wider border-b border-slate-200">
+                <th class="py-3.5 px-5 font-bold">Organisation &amp; Tenant ID</th>
+                <th class="py-3.5 px-5 font-bold">Entitled Vertical</th>
+                <th class="py-3.5 px-5 font-bold">Plan &amp; Quotas</th>
+                <th class="py-3.5 px-5 font-bold">Status</th>
+                <th class="py-3.5 px-5 font-bold text-right">Controls</th>
+              </tr>
+            </thead>
+            <tbody id="superAdminTenantsTable" class="divide-y divide-slate-200 text-xs">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Immutable Audit Log -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+          <div>
+            <h2 class="text-base font-bold text-[#101C32]">Security &amp; Operations Audit Trail</h2>
+            <p class="text-xs text-slate-500">Real-time log of tenant provisioning, reservations, check-ins, and payment settlements.</p>
+          </div>
+          <span class="text-[11px] font-mono text-slate-400">Append-Only Ledger</span>
+        </div>
+        <div id="auditLogList" class="divide-y divide-slate-100 max-h-72 overflow-y-auto text-xs font-mono">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 1: REGISTER NEW ORGANISATION / LAUNCH WORKSPACE                 -->
+  <!-- ===================================================================== -->
+  <div id="registerOrgModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-[#276EF1]">Tenant Onboarding</span>
+          <h3 class="text-xl font-extrabold text-[#101C32]">Register Organisation Workspace</h3>
+        </div>
+        <button onclick="closeModal('registerOrgModal')" class="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer">✕</button>
+      </div>
+
+      <form onsubmit="handleRegisterOrg(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Organisation / Business Name *</label>
+          <input type="text" id="orgNameInput" required placeholder="e.g., Wayanad Spice Resorts Pvt Ltd" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#276EF1]" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Primary Industry Application *</label>
+            <select id="orgIndustryInput" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#276EF1]">
+              <option value="Nexora Hospitality">Nexora Hospitality (Live MVP)</option>
+              <option value="Nexora Healthcare">Nexora Healthcare (Roadmap)</option>
+              <option value="Nexora Restaurant">Nexora Restaurant (Roadmap)</option>
+              <option value="Nexora Education">Nexora Education (Roadmap)</option>
+              <option value="Nexora Automotive">Nexora Automotive (Roadmap)</option>
+              <option value="Nexora Manufacturing">Nexora Manufacturing (Roadmap)</option>
+              <option value="Nexora Business">Nexora Business (Roadmap)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Subscription Plan *</label>
+            <select id="orgPlanInput" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#276EF1]">
+              <option value="Starter">Starter (1 Branch, 10 Users)</option>
+              <option value="Professional" selected>Professional (5 Branches, 50 Users)</option>
+              <option value="Enterprise">Enterprise (Unlimited)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Primary Branch / Location *</label>
+            <input type="text" id="orgBranchInput" required placeholder="e.g., Kozhikode Flagship" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#276EF1]" />
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Administrator Email *</label>
+            <input type="email" id="orgEmailInput" required placeholder="admin@company.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#276EF1]" />
+          </div>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end gap-3 border-t border-slate-100">
+          <button type="button" onclick="closeModal('registerOrgModal')" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 cursor-pointer">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#276EF1] hover:bg-[#1d5bd6] text-white font-semibold shadow-md cursor-pointer">Provision Workspace</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 2: NEW HOSPITALITY RESERVATION                                  -->
+  <!-- ===================================================================== -->
+  <div id="reservationModal" class="fixed inset-0 z-50 hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#F7F4EC] text-[#292E2C] rounded-2xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-[#C5A66A]/50 space-y-5">
+      <div class="flex items-center justify-between border-b border-[#E7DED0] pb-4">
+        <div>
+          <span class="text-[11px] font-bold uppercase tracking-wider text-[#173D35]">Front Desk Reservation</span>
+          <h3 class="font-serif text-xl font-bold text-[#173D35]">Create Guest Reservation</h3>
+        </div>
+        <button onclick="closeModal('reservationModal')" class="p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-[#E7DED0]/50 cursor-pointer">✕</button>
+      </div>
+
+      <form onsubmit="handleCreateReservation(event)" class="space-y-4 text-xs">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold text-[#173D35] mb-1">Guest Full Name *</label>
+            <input type="text" id="resGuestName" required placeholder="e.g., Arjun Menon" class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E7DED0] focus:outline-none focus:border-[#173D35]" />
+          </div>
+          <div>
+            <label class="block font-semibold text-[#173D35] mb-1">Phone / Contact *</label>
+            <input type="text" id="resGuestPhone" required placeholder="+91 98470 12345" class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E7DED0] focus:outline-none focus:border-[#173D35]" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-[#173D35] mb-1">Select Available Room / Suite *</label>
+          <select id="resRoomSelect" onchange="recalculateBookingEstimate()" required class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E7DED0] focus:outline-none focus:border-[#173D35]">
+            <!-- Populated with ONLY Available rooms to prevent double-booking -->
+          </select>
+          <p class="text-[11px] text-[#173D35]/70 mt-1">Only rooms currently in <strong>Available</strong> status are selectable to prevent overbooking.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block font-semibold text-[#173D35] mb-1">Number of Nights *</label>
+            <input type="number" id="resNights" min="1" max="30" value="2" onchange="recalculateBookingEstimate()" onkeyup="recalculateBookingEstimate()" required class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E7DED0] focus:outline-none focus:border-[#173D35]" />
+          </div>
+          <div>
+            <label class="block font-semibold text-[#173D35] mb-1">Initial Payment Status</label>
+            <select id="resPaymentStatus" class="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E7DED0] focus:outline-none focus:border-[#173D35]">
+              <option value="Paid (UPI/Card)">Paid in Full (UPI / Card)</option>
+              <option value="Pending at Check-Out">Pay at Check-Out</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Live Folio Cost Breakdown -->
+        <div class="p-3.5 rounded-xl bg-[#173D35] text-[#F7F4EC] flex items-center justify-between">
+          <div>
+            <div class="text-[11px] text-[#C5A66A] uppercase tracking-wider font-semibold">Estimated Stay Folio (incl. 12% GST)</div>
+            <div class="text-[11px] text-[#E7DED0]/80" id="resRateBreakdown">Select a room to view rate</div>
+          </div>
+          <div class="font-serif text-xl font-bold text-[#C5A66A]" id="resTotalDisplay">₹0</div>
+        </div>
+
+        <div class="pt-3 flex items-center justify-end gap-3 border-t border-[#E7DED0]">
+          <button type="button" onclick="closeModal('reservationModal')" class="px-4 py-2.5 rounded-xl border border-[#173D35]/30 text-[#173D35] font-semibold hover:bg-[#E7DED0]/50 cursor-pointer">Cancel</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#173D35] hover:bg-[#215247] text-[#F7F4EC] font-semibold shadow-md cursor-pointer">Confirm Reservation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- FOOTER                                                                -->
+  <!-- ===================================================================== -->
+  <footer class="bg-[#101C32] text-slate-400 border-t border-white/10 py-8 text-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-white tracking-wide">NEXORA BUSINESS CLOUD</span>
+        <span>•</span>
+        <span>“One ecosystem. Every operation. Smarter decisions.”</span>
+      </div>
+      <div>
+        Interactive Frontend Architecture &amp; Hospitality MVP Preview • LocalStorage Persisted
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- JAVASCRIPT APPLICATION LOGIC & PERSISTENCE                            -->
+  <!-- ===================================================================== -->
+  <script>
+    // -----------------------------------------------------------------------
+    // 1. SEVEN INDUSTRY DESIGN SYSTEMS SPECIFICATION DATA
+    // -----------------------------------------------------------------------
+    const VERTICAL_SYSTEMS = [
+      {
+        id: 'hospitality',
+        name: 'Nexora Hospitality',
+        tagline: 'Exceptional Stays. Intelligent Operations.',
+        status: 'Phase 2 Live MVP',
+        isLive: true,
+        primary: '#173D35',
+        accent: '#C5A66A',
+        surface: '#F7F4EC',
+        text: '#292E2C',
+        fontClass: 'font-serif',
+        target: 'Hotels, Resorts, Boutique Properties & Serviced Villas',
+        navItems: ['Front Desk', 'Room Inventory', 'Reservations', 'Housekeeping', 'Guest Folios', 'Occupancy Analytics'],
+        kpis: [
+          { label: 'Current Occupancy', value: '84.2%', delta: '+6.4% vs last week' },
+          { label: 'ADR (Avg Daily Rate)', value: '₹11,450', delta: 'Peak Season Tariff' },
+          { label: 'RevPAR', value: '₹9,640', delta: '+11.2% YoY' }
+        ],
+        modules: ['Multi-Property PMS', 'Overlap-Protected Bookings', 'Housekeeping Sync', 'GST Guest Billing']
+      },
+      {
+        id: 'healthcare',
+        name: 'Nexora Healthcare',
+        tagline: 'Intelligent Healthcare. Connected Operations.',
+        status: 'Phase 3 Planned',
+        isLive: false,
+        primary: '#1769AA',
+        accent: '#1B9A91',
+        surface: '#FAFCFE',
+        text: '#344455',
+        fontClass: 'font-sans',
+        target: 'Clinics, Diagnostic Labs & Multispeciality Hospitals',
+        navItems: ['OPD Queue', 'Patient EHR', 'Ward & Bed Map', 'Lab Verification', 'Pharmacy', 'Consent & Audit'],
+        kpis: [
+          { label: 'OPD Consultations Today', value: '142', delta: '18 mins avg wait' },
+          { label: 'IPD Bed Occupancy', value: '76%', delta: '14 Beds Available' },
+          { label: 'Pending Lab Sign-offs', value: '9', delta: 'Pathologist Queue' }
+        ],
+        modules: ['Clinical EHR & Consent', 'Double-Book Safe Beds', 'HL7 FHIR Ready', 'DPDP & HIPAA Safeguards']
+      },
+      {
+        id: 'restaurant',
+        name: 'Nexora Restaurant',
+        tagline: 'Every Order. Every Ingredient. Under Control.',
+        status: 'Phase 4 Planned',
+        isLive: false,
+        primary: '#722C3A',
+        accent: '#EF9550',
+        surface: '#FFF6EA',
+        text: '#352A28',
+        fontClass: 'font-sans',
+        target: 'Restaurants, Cafes, Cloud Kitchens & QSR Chains',
+        navItems: ['Touch POS', 'Floor & Tables', 'Kitchen Display (KDS)', 'QR Ordering', 'Recipe Costing', 'Wastage Log'],
+        kpis: [
+          { label: 'Active Table Orders', value: '24', delta: '₹48,900 open tabs' },
+          { label: 'Avg Kitchen Prep Time', value: '11m 40s', delta: 'Within SLA' },
+          { label: 'Food Cost Ratio', value: '28.4%', delta: '-1.2% waste reduction' }
+        ],
+        modules: ['Fast Touch POS', 'Live Kitchen Display', 'Ingredient BOM Costing', 'Multi-Branch Menus']
+      },
+      {
+        id: 'education',
+        name: 'Nexora Education',
+        tagline: 'Connected Learning. Smarter Institutions.',
+        status: 'Phase 5 Planned',
+        isLive: false,
+        primary: '#173B68',
+        accent: '#20A6A6',
+        surface: '#FAFBFD',
+        text: '#455468',
+        fontClass: 'font-sans',
+        target: 'Schools, Colleges, Universities & Training Academies',
+        navItems: ['Student SIS', 'Admissions', 'Attendance', 'Timetables', 'Examinations', 'Fee Ledger'],
+        kpis: [
+          { label: 'Active Enrolment', value: '3,480', delta: '99.1% verified records' },
+          { label: 'Today Attendance', value: '94.6%', delta: 'Across 42 Departments' },
+          { label: 'Term Fee Collection', value: '91.8%', delta: '₹1.42 Cr settled' }
+        ],
+        modules: ['Multi-Campus SIS', 'Faculty & Timetables', 'Parent/Student Portals', 'Automated Fee Receipts']
+      },
+      {
+        id: 'automotive',
+        name: 'Nexora Automotive',
+        tagline: 'Precision Service. Smarter Mobility Operations.',
+        status: 'Phase 6 Planned',
+        isLive: false,
+        primary: '#171C22',
+        accent: '#E04444',
+        surface: '#F4F6F8',
+        text: '#394552',
+        fontClass: 'font-mono',
+        target: 'Service Centres, Workshops & Detailing Studios',
+        navItems: ['Service Bays', 'Job Cards', 'Vehicle History', 'Technician Load', 'Spare Parts', 'Service Reminders'],
+        kpis: [
+          { label: 'Active Bay Job Cards', value: '18 / 20', delta: '90% Bay Utilisation' },
+          { label: 'Avg Turnaround Time', value: '3.4 hrs', delta: 'On-Schedule Delivery' },
+          { label: 'Parts Fill Rate', value: '96.5%', delta: '2 Low-Stock Alerts' }
+        ],
+        modules: ['Reg-Number Vin History', 'Technician Bay Dispatch', 'Parts Inventory Sync', 'Automated Service SMS']
+      },
+      {
+        id: 'manufacturing',
+        name: 'Nexora Manufacturing',
+        tagline: 'Engineering Efficiency. Controlling Production.',
+        status: 'Phase 7 Planned',
+        isLive: false,
+        primary: '#182C46',
+        accent: '#E58B36',
+        surface: '#F2F5F7',
+        text: '#49647E',
+        fontClass: 'font-mono',
+        target: 'Factories, Assembly Plants & Processing Units',
+        navItems: ['Production Lines', 'Bill of Materials', 'Work Orders', 'Raw Inventory', 'Quality Control', 'Batch Traceability'],
+        kpis: [
+          { label: 'OEE Plant Efficiency', value: '87.9%', delta: '+3.1% Shift A' },
+          { label: 'Active Work Orders', value: '34', delta: '12,400 Units Scheduled' },
+          { label: 'QC Pass Rate', value: '99.4%', delta: 'ISO Batch Verified' }
+        ],
+        modules: ['Multi-Level BOM', 'Shop-Floor Execution', 'Lot & Batch Traceability', 'Preventive Maintenance']
+      },
+      {
+        id: 'business',
+        name: 'Nexora Business',
+        tagline: 'Complete Control. Better Business.',
+        status: 'Phase 8 Planned',
+        isLive: false,
+        primary: '#383B85',
+        accent: '#7566E8',
+        surface: '#FAFAFC',
+        text: '#343747',
+        fontClass: 'font-sans',
+        target: 'Retail, Agencies, Professional Firms & SMEs',
+        navItems: ['Sales Pipeline', 'CRM Contacts', 'Invoicing', 'Inventory', 'HR & Attendance', 'Projects'],
+        kpis: [
+          { label: 'Qualified Pipeline', value: '₹64.5L', delta: '28 Active Deals' },
+          { label: 'Monthly Recurring', value: '₹18.2L', delta: '+14.5% MoM' },
+          { label: 'Team Utilisation', value: '82.0%', delta: '46 Active Staff' }
+        ],
+        modules: ['Modular CRM & Deals', 'GST Invoicing & Ledger', 'HR, Leave & Payroll', 'Configurable Workflows']
+      }
+    ];
+
+    // -----------------------------------------------------------------------
+    // 2. INITIAL STATE & LOCALSTORAGE PERSISTENCE LAYER
+    // -----------------------------------------------------------------------
+    const STORAGE_KEY = 'nexora_cloud_mvp_v1';
+
+    const DEFAULT_STATE = {
+      selectedPropertyId: 'prop-kozhikode',
+      selectedVerticalPreviewId: 'hospitality',
+      properties: [
+        { id: 'prop-kozhikode', name: 'The Malabar Heritage Resort — Kozhikode', location: 'Calicut Beach Road, Kerala' },
+        { id: 'prop-vagamon', name: 'Vagamon Mist Luxury Villas — Idukki', location: 'Pine Valley Ridge, Kerala' }
+      ],
+      rooms: [
+        { id: 'R-101', propertyId: 'prop-kozhikode', number: '101', name: 'Arabian Sea Deluxe', category: 'Deluxe Suite', rate: 8500, status: 'Occupied', currentGuest: 'Dr. Kavita Nair' },
+        { id: 'R-102', propertyId: 'prop-kozhikode', number: '102', name: 'Zamorin Royal Courtyard', category: 'Royal Suite', rate: 14500, status: 'Available', currentGuest: null },
+        { id: 'R-103', propertyId: 'prop-kozhikode', number: '103', name: 'Spice Garden Pavilion', category: 'Garden Villa', rate: 11000, status: 'Cleaning', currentGuest: null },
+        { id: 'R-104', propertyId: 'prop-kozhikode', number: '104', name: 'Malabar Horizon Suite', category: 'Deluxe Suite', rate: 8500, status: 'Available', currentGuest: null },
+        { id: 'R-105', propertyId: 'prop-kozhikode', number: '105', name: 'Private Plunge Pool Villa', category: 'Pool Villa', rate: 19500, status: 'Available', currentGuest: null },
+        { id: 'R-106', propertyId: 'prop-kozhikode', number: '106', name: 'Teakwood Heritage Loft', category: 'Deluxe Suite', rate: 8500, status: 'Maintenance', currentGuest: null },
+        // Second property rooms
+        { id: 'V-201', propertyId: 'prop-vagamon', number: '201', name: 'Cloudridge Glass Villa', category: 'Pool Villa', rate: 17500, status: 'Available', currentGuest: null },
+        { id: 'V-202', propertyId: 'prop-vagamon', number: '202', name: 'Cardamom Mist Cottage', category: 'Garden Villa', rate: 10500, status: 'Occupied', currentGuest: 'Rohan & Priya Verma' },
+        { id: 'V-203', propertyId: 'prop-vagamon', number: '203', name: 'Meadow View Suite', category: 'Deluxe Suite', rate: 9000, status: 'Available', currentGuest: null }
+      ],
+      reservations: [
+        {
+          id: 'RES-8401',
+          propertyId: 'prop-kozhikode',
+          guestName: 'Dr. Kavita Nair',
+          guestPhone: '+91 98471 22019',
+          roomId: 'R-101',
+          roomLabel: '101 — Arabian Sea Deluxe',
+          nights: 3,
+          ratePerNight: 8500,
+          subtotal: 25500,
+          gst: 3060,
+          totalAmount: 28560,
+          paymentStatus: 'Paid (UPI/Card)',
+          stayStatus: 'Checked-In',
+          createdAt: '2026-11-23'
+        },
+        {
+          id: 'RES-8402',
+          propertyId: 'prop-kozhikode',
+          guestName: 'Siddharth Menon',
+          guestPhone: '+91 94470 88112',
+          roomId: 'R-102',
+          roomLabel: '102 — Zamorin Royal Courtyard',
+          nights: 2,
+          ratePerNight: 14500,
+          subtotal: 29000,
+          gst: 3480,
+          totalAmount: 32480,
+          paymentStatus: 'Pending at Check-Out',
+          stayStatus: 'Confirmed',
+          createdAt: '2026-11-24'
+        },
+        {
+          id: 'RES-8403',
+          propertyId: 'prop-vagamon',
+          guestName: 'Rohan & Priya Verma',
+          guestPhone: '+91 99001 44510',
+          roomId: 'V-202',
+          roomLabel: '202 — Cardamom Mist Cottage',
+          nights: 2,
+          ratePerNight: 10500,
+          subtotal: 21000,
+          gst: 2520,
+          totalAmount: 23520,
+          paymentStatus: 'Paid (UPI/Card)',
+          stayStatus: 'Checked-In',
+          createdAt: '2026-11-24'
+        }
+      ],
+      housekeepingTasks: [
+        {
+          id: 'HK-301',
+          propertyId: 'prop-kozhikode',
+          roomId: 'R-103',
+          roomLabel: '103 — Spice Garden Pavilion',
+          priority: 'High (Departure Turnover)',
+          assignedTo: 'Anitha K. (Floor Supervisor)',
+          status: 'In Progress'
+        }
+      ],
+      tenants: [
+        {
+          id: 'TNT-001',
+          name: 'Malabar Heritage Hospitality Group',
+          industry: 'Nexora Hospitality',
+          plan: 'Professional',
+          branches: '2 / 5',
+          users: '18 / 50',
+          status: 'Active',
+          adminEmail: 'ops@malabarheritage.in'
+        },
+        {
+          id: 'TNT-002',
+          name: 'Aster MedCity Clinics (Pilot)',
+          industry: 'Nexora Healthcare',
+          plan: 'Enterprise',
+          branches: '4 / Unlimited',
+          users: '64 / Unlimited',
+          status: 'Sandbox Preview',
+          adminEmail: 'it-admin@asterpilot.org'
+        },
+        {
+          id: 'TNT-003',
+          name: 'Paragon Culinary Kitchens',
+          industry: 'Nexora Restaurant',
+          plan: 'Professional',
+          branches: '3 / 5',
+          users: '29 / 50',
+          status: 'Sandbox Preview',
+          adminEmail: 'systems@paragonkitchens.in'
+        }
+      ],
+      auditLogs: [
+        { time: '17:42:10 IST', actor: 'frontdesk@malabarheritage.in', tenant: 'TNT-001', action: 'CHECK_IN_VERIFIED: Guest Dr. Kavita Nair assigned to Room 101' },
+        { time: '16:15:04 IST', actor: 'system@nexora.cloud', tenant: 'TNT-001', action: 'TENANT_RLS_POLICY_ACTIVE: Isolated schema verified for 2 properties' },
+        { time: '14:05:33 IST', actor: 'superadmin@nexora.cloud', tenant: 'PLATFORM', action: 'PHASE_2_RELEASE: Nexora Hospitality PMS module activated' }
+      ]
+    };
+
+    let appState = loadState();
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          return JSON.parse(saved);
+        }
+      } catch (e) {
+        console.warn('Could not read localStorage, using default state.', e);
+      }
+      return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.warn('Could not persist to localStorage.', e);
+      }
+    }
+
+    function resetDemoDatabase() {
+      appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+      saveState();
+      renderAll();
+      showToast('Demo database restored to clean initial state.', 'info');
+    }
+
+    function appendAuditLog(actor, tenant, action) {
+      const now = new Date();
+      const timeStr = now.toTimeString().split(' ')[0] + ' IST';
+      appState.auditLogs.unshift({ time: timeStr, actor, tenant, action });
+      if (appState.auditLogs.length > 30) appState.auditLogs.pop();
+      saveState();
+      renderSuperAdmin();
+    }
+
+    // -----------------------------------------------------------------------
+    // 3. NOTIFICATION TOAST SYSTEM (NO ALERT() CALLS)
+    // -----------------------------------------------------------------------
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const styles = {
+        success: 'bg-[#173D35] text-[#F7F4EC] border-[#C5A66A]',
+        info: 'bg-[#101C32] text-white border-[#276EF1]',
+        warning: 'bg-amber-900 text-amber-50 border-amber-400'
+      };
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl border shadow-xl text-xs font-medium flex items-center justify-between gap-3 transition-all duration-300 ${styles[type] || styles.info}`;
+      toast.innerHTML = `
+        <span>${message}</span>
+        <button onclick="this.parentElement.remove()" class="opacity-70 hover:opacity-100 font-bold cursor-pointer">✕</button>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        if (toast.parentElement) toast.remove();
+      }, 4200);
+    }
+
+    // -----------------------------------------------------------------------
+    // 4. TOP EXPERIENCE SWITCHER & MODAL CONTROLS
+    // -----------------------------------------------------------------------
+    function switchExperience(viewName) {
+      // Hide all sections
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.add('hidden'));
+      const target = document.getElementById(`view-${viewName}`);
+      if (target) target.classList.remove('hidden');
+
+      // Update active tab styling
+      document.querySelectorAll('.exp-tab').forEach(btn => {
+        btn.classList.remove('bg-[#276EF1]', 'text-white', 'shadow');
+        btn.classList.add('text-slate-300', 'hover:text-white', 'hover:bg-white/10');
+      });
+      const activeBtn = document.getElementById(`nav-${viewName}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('text-slate-300', 'hover:text-white', 'hover:bg-white/10');
+        activeBtn.classList.add('bg-[#276EF1]', 'text-white', 'shadow');
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      renderAll();
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function openRegisterOrgModal(preselectedPlan = 'Professional') {
+      document.getElementById('orgPlanInput').value = preselectedPlan;
+      openModal('registerOrgModal');
+    }
+
+    function handleRegisterOrg(e) {
+      e.preventDefault();
+      const name = document.getElementById('orgNameInput').value.trim();
+      const industry = document.getElementById('orgIndustryInput').value;
+      const plan = document.getElementById('orgPlanInput').value;
+      const branch = document.getElementById('orgBranchInput').value.trim();
+      const email = document.getElementById('orgEmailInput').value.trim();
+
+      const newId = 'TNT-00' + (appState.tenants.length + 1);
+      const quotaMap = {
+        Starter: { branches: '1 / 1', users: '1 / 10' },
+        Professional: { branches: '1 / 5', users: '1 / 50' },
+        Enterprise: { branches: '1 / Unlimited', users: '1 / Unlimited' }
+      };
+
+      appState.tenants.unshift({
+        id: newId,
+        name,
+        industry,
+        plan,
+        branches: quotaMap[plan].branches,
+        users: quotaMap[plan].users,
+        status: industry === 'Nexora Hospitality' ? 'Active' : 'Sandbox Preview',
+        adminEmail: email
+      });
+
+      // If Hospitality, also add their branch to the live property selector!
+      if (industry === 'Nexora Hospitality') {
+        const propId = 'prop-' + Date.now();
+        appState.properties.push({
+          id: propId,
+          name: `${name} — ${branch}`,
+          location: branch
+        });
+        appState.rooms.push({
+          id: 'R-' + Math.floor(300 + Math.random() * 600),
+          propertyId: propId,
+          number: '301',
+          name: 'Inaugural Executive Suite',
+          category: 'Royal Suite',
+          rate: 12000,
+          status: 'Available',
+          currentGuest: null
+        });
+        appState.selectedPropertyId = propId;
+      }
+
+      saveState();
+      appendAuditLog(email, newId, `ORG_PROVISIONED: ${name} (${industry} • ${plan})`);
+      closeModal('registerOrgModal');
+      e.target.reset();
+
+      if (industry === 'Nexora Hospitality') {
+        showToast(`Workspace "${name}" provisioned! Launching your Hospitality PMS...`, 'success');
+        switchExperience('hospitality');
+      } else {
+        showToast(`Tenant "${name}" registered in Control Centre! Opening Super Admin...`, 'info');
+        switchExperience('superadmin');
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // 5. RENDER CORPORATE WEBSITE VERTICAL CARDS
+    // -----------------------------------------------------------------------
+    function renderCorporateVerticals() {
+      const grid = document.getElementById('corporateVerticalsGrid');
+      if (!grid) return;
+
+      grid.innerHTML = VERTICAL_SYSTEMS.map(v => `
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-full" style="background-color: ${v.primary}"></span>
+                <span class="w-3.5 h-3.5 rounded-full -ml-1.5 border border-white" style="background-color: ${v.accent}"></span>
+              </div>
+              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${v.isLive ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">
+                ${v.status}
+              </span>
+            </div>
+            <h3 class="text-base font-bold text-[#101C32]">${v.name}</h3>
+            <p class="text-xs font-medium mt-0.5" style="color: ${v.primary}">“${v.tagline}”</p>
+            <p class="text-xs text-slate-500 mt-2.5 leading-relaxed">${v.target}</p>
+          </div>
+          <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <button onclick="inspectVertical('${v.id}')" class="text-xs font-semibold text-[#276EF1] hover:underline cursor-pointer">
+              Preview Design System
+            </button>
+            ${v.isLive ? `<button onclick="switchExperience('hospitality')" class="text-xs font-bold px-2.5 py-1 rounded-lg bg-[#173D35] text-[#C5A66A] cursor-pointer">Open MVP</button>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function inspectVertical(verticalId) {
+      appState.selectedVerticalPreviewId = verticalId;
+      saveState();
+      switchExperience('verticals');
+    }
+
+    // -----------------------------------------------------------------------
+    // 6. NEXORA HOSPITALITY MVP (PHASE 2 INTERACTIVE ENGINE)
+    // -----------------------------------------------------------------------
+    function switchHospitalityProperty(propId) {
+      appState.selectedPropertyId = propId;
+      saveState();
+      renderHospitality();
+      const prop = appState.properties.find(p => p.id === propId);
+      if (prop) showToast(`Switched property context to ${prop.name}`, 'info');
+    }
+
+    function switchHospTab(tabName) {
+      document.querySelectorAll('.hosp-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById(`hosp-panel-${tabName}`).classList.remove('hidden');
+
+      document.querySelectorAll('.hosp-subtab').forEach(btn => {
+        btn.classList.remove('border-[#C5A66A]', 'text-[#C5A66A]');
+        btn.classList.add('border-transparent', 'text-[#E7DED0]/75');
+      });
+      const active = document.getElementById(`htab-${tabName}`);
+      active.classList.remove('border-transparent', 'text-[#E7DED0]/75');
+      active.classList.add('border-[#C5A66A]', 'text-[#C5A66A]');
+    }
+
+    function renderHospitality() {
+      // 1. Property Selector
+      const propSelect = document.getElementById('hospPropertySelector');
+      if (propSelect) {
+        propSelect.innerHTML = appState.properties.map(p =>
+          `<option value="${p.id}" ${p.id === appState.selectedPropertyId ? 'selected' : ''} class="text-slate-900">${p.name}</option>`
+        ).join('');
+      }
+
+      const propRooms = appState.rooms.filter(r => r.propertyId === appState.selectedPropertyId);
+      const propReservations = appState.reservations.filter(r => r.propertyId === appState.selectedPropertyId);
+      const propTasks = appState.housekeepingTasks.filter(t => t.propertyId === appState.selectedPropertyId);
+
+      // 2. KPI Strip
+      const totalRooms = propRooms.length;
+      const occupiedCount = propRooms.filter(r => r.status === 'Occupied').length;
+      const availableCount = propRooms.filter(r => r.status === 'Available').length;
+      const cleaningCount = propRooms.filter(r => r.status === 'Cleaning').length;
+      const occupancyPct = totalRooms > 0 ? Math.round((occupiedCount / totalRooms) * 100) : 0;
+      const totalRevenue = propReservations.reduce((sum, r) => sum + r.totalAmount, 0);
+
+      const kpiStrip = document.getElementById('hospKpiStrip');
+      if (kpiStrip) {
+        kpiStrip.innerHTML = `
+          <div class="bg-white rounded-2xl p-4 border border-[#E7DED0] shadow-sm">
+            <div class="text-[11px] uppercase tracking-wider text-[#292E2C]/60 font-semibold">Live Occupancy</div>
+            <div class="font-serif text-2xl font-bold text-[#173D35] mt-1">${occupancyPct}% <span class="text-xs font-sans font-normal text-slate-500">(${occupiedCount}/${totalRooms} Rooms)</span></div>
+          </div>
+          <div class="bg-white rounded-2xl p-4 border border-[#E7DED0] shadow-sm">
+            <div class="text-[11px] uppercase tracking-wider text-[#292E2C]/60 font-semibold">Ready For Check-In</div>
+            <div class="font-serif text-2xl font-bold text-emerald-800 mt-1">${availableCount} <span class="text-xs font-sans font-normal text-slate-500">Available Suites</span></div>
+          </div>
+          <div class="bg-white rounded-2xl p-4 border border-[#E7DED0] shadow-sm">
+            <div class="text-[11px] uppercase tracking-wider text-[#292E2C]/60 font-semibold">Housekeeping Queue</div>
+            <div class="font-serif text-2xl font-bold text-sky-800 mt-1">${cleaningCount} <span class="text-xs font-sans font-normal text-slate-500">Rooms in Turnover</span></div>
+          </div>
+          <div class="bg-white rounded-2xl p-4 border border-[#E7DED0] shadow-sm">
+            <div class="text-[11px] uppercase tracking-wider text-[#292E2C]/60 font-semibold">Property Folio Revenue</div>
+            <div class="font-serif text-2xl font-bold text-[#173D35] mt-1">₹${totalRevenue.toLocaleString('en-IN')}</div>
+          </div>
+        `;
+      }
+
+      // 3. Room Inventory Grid
+      const roomGrid = document.getElementById('hospRoomGrid');
+      if (roomGrid) {
+        const badgeStyles = {
+          Available: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+          Occupied: 'bg-amber-100 text-amber-900 border-amber-300',
+          Cleaning: 'bg-sky-100 text-sky-900 border-sky-300',
+          Maintenance: 'bg-rose-100 text-rose-900 border-rose-300'
+        };
+
+        roomGrid.innerHTML = propRooms.map(room => `
+          <div class="bg-white rounded-2xl border border-[#E7DED0] p-5 shadow-sm flex flex-col justify-between hover:border-[#C5A66A] transition">
+            <div>
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-[#C5A66A]">Room ${room.number} • ${room.category}</span>
+                  <h3 class="font-serif text-lg font-bold text-[#173D35] mt-0.5">${room.name}</h3>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold border ${badgeStyles[room.status]}">
+                  ${room.status}
+                </span>
+              </div>
+
+              <div class="mt-4 pt-3 border-t border-[#F7F4EC] flex items-center justify-between text-xs">
+                <span class="text-slate-500">Nightly Tariff:</span>
+                <span class="font-bold text-[#173D35]">₹${room.rate.toLocaleString('en-IN')} <span class="font-normal text-slate-400">+ GST</span></span>
+              </div>
+
+              <div class="mt-2 flex items-center justify-between text-xs">
+                <span class="text-slate-500">Current Occupant:</span>
+                <span class="font-semibold ${room.currentGuest ? 'text-[#292E2C]' : 'text-slate-400 italic'}">
+                  ${room.currentGuest || 'Unoccupied'}
+                </span>
+              </div>
+            </div>
+
+            <div class="mt-5 pt-3 border-t border-[#E7DED0]/70 flex items-center justify-between gap-2">
+              <select onchange="changeRoomStatus('${room.id}', this.value)" aria-label="Change room status" class="text-[11px] bg-[#F7F4EC] border border-[#E7DED0] rounded-lg px-2.5 py-1.5 font-semibold text-[#173D35] cursor-pointer">
+                <option value="Available" ${room.status === 'Available' ? 'selected' : ''}>Set: Available</option>
+                <option value="Occupied" ${room.status === 'Occupied' ? 'selected' : ''}>Set: Occupied</option>
+                <option value="Cleaning" ${room.status === 'Cleaning' ? 'selected' : ''}>Set: Cleaning</option>
+                <option value="Maintenance" ${room.status === 'Maintenance' ? 'selected' : ''}>Set: Maintenance</option>
+              </select>
+
+              ${room.status === 'Available'
+                ? `<button onclick="openReservationModal('${room.id}')" class="px-3 py-1.5 rounded-lg bg-[#173D35] text-[#F7F4EC] text-[11px] font-semibold hover:bg-[#215247] transition cursor-pointer">Book Suite</button>`
+                : `<span class="text-[11px] text-slate-400 font-medium">Locked</span>`
+              }
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // 4. Reservations Table
+      const resTable = document.getElementById('hospReservationsTable');
+      if (resTable) {
+        if (propReservations.length === 0) {
+          resTable.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-500">No reservations recorded for this property yet. Click "+ New Reservation" to create one.</td></tr>`;
+        } else {
+          resTable.innerHTML = propReservations.map(res => {
+            const statusBadge = {
+              'Confirmed': 'bg-blue-100 text-blue-800',
+              'Checked-In': 'bg-emerald-100 text-emerald-800',
+              'Checked-Out': 'bg-slate-200 text-slate-700'
+            }[res.stayStatus] || 'bg-slate-100 text-slate-700';
+
+            let actionBtns = '';
+            if (res.stayStatus === 'Confirmed') {
+              actionBtns = `<button onclick="checkInReservation('${res.id}')" class="px-3 py-1.5 rounded-lg bg-[#173D35] text-[#F7F4EC] font-semibold hover:bg-[#215247] transition cursor-pointer">Check-In Guest</button>`;
+            } else if (res.stayStatus === 'Checked-In') {
+              actionBtns = `<button onclick="checkOutReservation('${res.id}')" class="px-3 py-1.5 rounded-lg bg-[#C5A66A] text-[#173D35] font-bold hover:bg-[#D8BE8B] transition cursor-pointer">Check-Out &amp; Clean</button>`;
+            } else {
+              actionBtns = `<span class="text-slate-400 italic">Completed</span>`;
+            }
+
+            return `
+              <tr class="hover:bg-[#F7F4EC]/60 transition">
+                <td class="py-3.5 px-4">
+                  <div class="font-bold text-[#173D35]">${res.guestName}</div>
+                  <div class="text-[11px] text-slate-500">${res.id} • ${res.guestPhone}</div>
+                </td>
+                <td class="py-3.5 px-4 font-medium">${res.roomLabel}</td>
+                <td class="py-3.5 px-4">${res.nights} Night(s) <span class="text-slate-400">(${res.createdAt})</span></td>
+                <td class="py-3.5 px-4">
+                  <div class="font-bold text-[#173D35]">₹${res.totalAmount.toLocaleString('en-IN')}</div>
+                  <div class="text-[11px] ${res.paymentStatus.includes('Paid') ? 'text-emerald-700 font-semibold' : 'text-amber-700'}">${res.paymentStatus}</div>
+                </td>
+                <td class="py-3.5 px-4">
+                  <span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${statusBadge}">${res.stayStatus}</span>
+                </td>
+                <td class="py-3.5 px-4 text-right">${actionBtns}</td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // 5. Housekeeping Queue
+      const hkList = document.getElementById('hospHousekeepingList');
+      if (hkList) {
+        if (propTasks.length === 0) {
+          hkList.innerHTML = `<div class="col-span-2 bg-white rounded-2xl border border-[#E7DED0] p-8 text-center text-xs text-slate-500">All suites are clean and inspected! Zero pending housekeeping tasks.</div>`;
+        } else {
+          hkList.innerHTML = propTasks.map(task => `
+            <div class="bg-white rounded-2xl border border-[#E7DED0] p-5 flex items-center justify-between gap-4 shadow-sm">
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-sky-700">${task.priority}</span>
+                <h4 class="font-serif text-base font-bold text-[#173D35] mt-0.5">${task.roomLabel}</h4>
+                <p class="text-xs text-slate-500 mt-1">Assigned: ${task.assignedTo}</p>
+              </div>
+              <button onclick="completeHousekeeping('${task.id}')" class="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold transition cursor-pointer">
+                Mark Clean &amp; Ready
+              </button>
+            </div>
+          `).join('');
+        }
+      }
+
+      // 6. Billing Ledger
+      const billingTable = document.getElementById('hospBillingTable');
+      if (billingTable) {
+        billingTable.innerHTML = propReservations.map(res => `
+          <tr class="hover:bg-[#F7F4EC]/60">
+            <td class="py-3.5 px-4 font-mono font-semibold text-[#173D35]">INV-${res.id.split('-')[1]}</td>
+            <td class="py-3.5 px-4 font-bold">${res.guestName}</td>
+            <td class="py-3.5 px-4">${res.roomLabel} (${res.nights}N)</td>
+            <td class="py-3.5 px-4">
+              <span class="font-bold text-[#173D35]">₹${res.totalAmount.toLocaleString('en-IN')}</span>
+              <span class="text-[11px] text-slate-400 block">Base ₹${res.subtotal.toLocaleString('en-IN')} + GST ₹${res.gst.toLocaleString('en-IN')}</span>
+            </td>
+            <td class="py-3.5 px-4">
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${res.paymentStatus.includes('Paid') ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+                ${res.paymentStatus}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-right">
+              ${!res.paymentStatus.includes('Paid')
+                ? `<button onclick="settleInvoice('${res.id}')" class="px-3 py-1.5 rounded-lg bg-[#173D35] text-[#F7F4EC] font-semibold hover:bg-[#215247] transition cursor-pointer">Record Payment</button>`
+                : `<span class="text-emerald-700 font-semibold">Settled ✓</span>`
+              }
+            </td>
+          </tr>
+        `).join('');
+      }
+    }
+
+    // Hospitality Interactive Workflow Actions
+    function changeRoomStatus(roomId, newStatus) {
+      const room = appState.rooms.find(r => r.id === roomId);
+      if (!room) return;
+      room.status = newStatus;
+      if (newStatus !== 'Occupied') room.currentGuest = null;
+
+      if (newStatus === 'Cleaning') {
+        const exists = appState.housekeepingTasks.some(t => t.roomId === room.id);
+        if (!exists) {
+          appState.housekeepingTasks.push({
+            id: 'HK-' + Math.floor(400 + Math.random() * 500),
+            propertyId: room.propertyId,
+            roomId: room.id,
+            roomLabel: `${room.number} — ${room.name}`,
+            priority: 'Standard Turnover',
+            assignedTo: 'Housekeeping Team A',
+            status: 'Pending'
+          });
+        }
+      }
+      saveState();
+      appendAuditLog('frontdesk@malabarheritage.in', 'TNT-001', `ROOM_STATUS_UPDATED: Room ${room.number} -> ${newStatus}`);
+      renderHospitality();
+      showToast(`Room ${room.number} status updated to ${newStatus}.`, 'info');
+    }
+
+    function openReservationModal(preselectedRoomId = null) {
+      const propRooms = appState.rooms.filter(r => r.propertyId === appState.selectedPropertyId && r.status === 'Available');
+      const select = document.getElementById('resRoomSelect');
+
+      if (propRooms.length === 0) {
+        showToast('No Available rooms at this property! Complete housekeeping or check-out a room first.', 'warning');
+        return;
+      }
+
+      select.innerHTML = propRooms.map(r =>
+        `<option value="${r.id}" ${r.id === preselectedRoomId ? 'selected' : ''}>Room ${r.number} — ${r.name} (₹${r.rate.toLocaleString('en-IN')}/night)</option>`
+      ).join('');
+
+      recalculateBookingEstimate();
+      openModal('reservationModal');
+    }
+
+    function recalculateBookingEstimate() {
+      const roomId = document.getElementById('resRoomSelect').value;
+      const nights = Math.max(1, parseInt(document.getElementById('resNights').value || '1', 10));
+      const room = appState.rooms.find(r => r.id === roomId);
+      if (!room) return;
+
+      const subtotal = room.rate * nights;
+      const gst = Math.round(subtotal * 0.12);
+      const total = subtotal + gst;
+
+      document.getElementById('resRateBreakdown').textContent = `₹${room.rate.toLocaleString('en-IN')} × ${nights} night(s) + ₹${gst.toLocaleString('en-IN')} GST`;
+      document.getElementById('resTotalDisplay').textContent = `₹${total.toLocaleString('en-IN')}`;
+    }
+
+    function handleCreateReservation(e) {
+      e.preventDefault();
+      const guestName = document.getElementById('resGuestName').value.trim();
+      const guestPhone = document.getElementById('resGuestPhone').value.trim();
+      const roomId = document.getElementById('resRoomSelect').value;
+      const nights = Math.max(1, parseInt(document.getElementById('resNights').value, 10));
+      const paymentStatus = document.getElementById('resPaymentStatus').value;
+
+      const room = appState.rooms.find(r => r.id === roomId);
+      // Double-booking safeguard check
+      if (!room || room.status !== 'Available') {
+        showToast('Conflict detected: Selected room is no longer available.', 'warning');
+        return;
+      }
+
+      const subtotal = room.rate * nights;
+      const gst = Math.round(subtotal * 0.12);
+      const totalAmount = subtotal + gst;
+      const resId = 'RES-' + Math.floor(8500 + Math.random() * 1400);
+
+      // Immediately reserve and check-in or mark confirmed
+      room.status = 'Occupied';
+      room.currentGuest = guestName;
+
+      appState.reservations.unshift({
+        id: resId,
+        propertyId: appState.selectedPropertyId,
+        guestName,
+        guestPhone,
+        roomId: room.id,
+        roomLabel: `${room.number} — ${room.name}`,
+        nights,
+        ratePerNight: room.rate,
+        subtotal,
+        gst,
+        totalAmount,
+        paymentStatus,
+        stayStatus: 'Checked-In',
+        createdAt: '2026-11-24'
+      });
+
+      saveState();
+      appendAuditLog('frontdesk@malabarheritage.in', 'TNT-001', `RESERVATION_&_CHECKIN: ${resId} for ${guestName} (Room ${room.number})`);
+      closeModal('reservationModal');
+      e.target.reset();
+      renderHospitality();
+      showToast(`Reservation ${resId} confirmed & ${guestName} checked into Room ${room.number}!`, 'success');
+    }
+
+    function checkInReservation(resId) {
+      const res = appState.reservations.find(r => r.id === resId);
+      if (!res) return;
+      const room = appState.rooms.find(r => r.id === res.roomId);
+      if (room && room.status !== 'Available' && room.currentGuest !== res.guestName) {
+        showToast(`Cannot check-in: Room ${room.number} is currently ${room.status}.`, 'warning');
+        return;
+      }
+      res.stayStatus = 'Checked-In';
+      if (room) {
+        room.status = 'Occupied';
+        room.currentGuest = res.guestName;
+      }
+      saveState();
+      appendAuditLog('frontdesk@malabarheritage.in', 'TNT-001', `GUEST_CHECKED_IN: ${res.id} (${res.guestName})`);
+      renderHospitality();
+      showToast(`${res.guestName} checked into ${res.roomLabel}.`, 'success');
+    }
+
+    function checkOutReservation(resId) {
+      const res = appState.reservations.find(r => r.id === resId);
+      if (!res) return;
+      res.stayStatus = 'Checked-Out';
+      res.paymentStatus = 'Paid (UPI/Card)';
+
+      const room = appState.rooms.find(r => r.id === res.roomId);
+      if (room) {
+        room.status = 'Cleaning';
+        room.currentGuest = null;
+        appState.housekeepingTasks.unshift({
+          id: 'HK-' + Math.floor(500 + Math.random() * 499),
+          propertyId: room.propertyId,
+          roomId: room.id,
+          roomLabel: `${room.number} — ${room.name}`,
+          priority: 'Departure Deep Clean',
+          assignedTo: 'Housekeeping Express Unit',
+          status: 'Pending'
+        });
+      }
+
+      saveState();
+      appendAuditLog('frontdesk@malabarheritage.in', 'TNT-001', `CHECKOUT_COMPLETE: ${res.id} settled; Room moved to Cleaning queue`);
+      renderHospitality();
+      showToast(`Checked out ${res.guestName}. Folio settled & room sent to Housekeeping!`, 'success');
+    }
+
+    function completeHousekeeping(taskId) {
+      const taskIdx = appState.housekeepingTasks.findIndex(t => t.id === taskId);
+      if (taskIdx === -1) return;
+      const task = appState.housekeepingTasks[taskIdx];
+
+      const room = appState.rooms.find(r => r.id === task.roomId);
+      if (room) {
+        room.status = 'Available';
+        room.currentGuest = null;
+      }
+
+      appState.housekeepingTasks.splice(taskIdx, 1);
+      saveState();
+      appendAuditLog('housekeeping@malabarheritage.in', 'TNT-001', `ROOM_READY: ${task.roomLabel} inspected and returned to Available inventory`);
+      renderHospitality();
+      showToast(`${task.roomLabel} marked clean and returned to Available inventory!`, 'success');
+    }
+
+    function settleInvoice(resId) {
+      const res = appState.reservations.find(r => r.id === resId);
+      if (!res) return;
+      res.paymentStatus = 'Paid (UPI/Card)';
+      saveState();
+      appendAuditLog('cashier@malabarheritage.in', 'TNT-001', `FOLIO_SETTLED: ₹${res.totalAmount.toLocaleString('en-IN')} recorded for ${res.id}`);
+      renderHospitality();
+      showToast(`Payment of ₹${res.totalAmount.toLocaleString('en-IN')} recorded for ${res.guestName}.`, 'success');
+    }
+
+    // -----------------------------------------------------------------------
+    // 7. SEVEN INDUSTRY DESIGN SYSTEMS PREVIEWER
+    // -----------------------------------------------------------------------
+    function renderVerticalsShowcase() {
+      const bar = document.getElementById('verticalSelectorBar');
+      const canvas = document.getElementById('verticalPreviewCanvas');
+      if (!bar || !canvas) return;
+
+      bar.innerHTML = VERTICAL_SYSTEMS.map(v => {
+        const active = v.id === appState.selectedVerticalPreviewId;
+        return `
+          <button onclick="selectVerticalPreview('${v.id}')" class="px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center gap-2 border cursor-pointer ${active ? 'shadow-md scale-[1.02]' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}"
+            style="${active ? `background-color: ${v.primary}; color: #FFFFFF; border-color: ${v.accent};` : ''}">
+            <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${v.accent}"></span>
+            <span>${v.name}</span>
+          </button>
+        `;
+      }).join('');
+
+      const v = VERTICAL_SYSTEMS.find(item => item.id === appState.selectedVerticalPreviewId) || VERTICAL_SYSTEMS[0];
+
+      canvas.innerHTML = `
+        <div class="${v.fontClass}" style="background-color: ${v.surface}; color: ${v.text};">
+          <!-- Simulated App Topbar -->
+          <div class="px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b" style="background-color: ${v.primary}; color: #FFFFFF; border-color: ${v.accent}40;">
+            <div>
+              <div class="flex items-center gap-2.5">
+                <span class="text-lg font-bold tracking-tight">${v.name}</span>
+                <span class="text-[10px] uppercase tracking-widest px-2.5 py-0.5 rounded-full font-sans font-bold" style="background-color: ${v.accent}; color: #101C32;">
+                  ${v.status}
+                </span>
+              </div>
+              <p class="text-xs opacity-85 mt-0.5">“${v.tagline}”</p>
+            </div>
+            <div class="flex items-center gap-3 font-sans">
+              <div class="text-right text-[11px]">
+                <div class="opacity-70">Palette Tokens</div>
+                <div class="font-mono font-semibold">${v.primary} / ${v.accent}</div>
+              </div>
+              ${v.isLive
+                ? `<button onclick="switchExperience('hospitality')" class="px-4 py-2 rounded-xl font-bold text-xs shadow cursor-pointer" style="background-color: ${v.accent}; color: #173D35;">Launch Live App →</button>`
+                : `<span class="px-3 py-1.5 rounded-xl bg-white/10 text-[11px] font-semibold">Design System Preview</span>`
+              }
+            </div>
+          </div>
+
+          <!-- Simulated Industry Navigation -->
+          <div class="px-6 py-3 border-b flex items-center gap-2 overflow-x-auto bg-white/60 font-sans text-xs" style="border-color: ${v.primary}15;">
+            ${v.navItems.map((nav, i) => `
+              <span class="px-3 py-1.5 rounded-lg whitespace-nowrap font-semibold ${i === 0 ? 'text-white shadow-sm' : 'opacity-75'}"
+                style="${i === 0 ? `background-color: ${v.primary};` : ''}">
+                ${nav}
+              </span>
+            `).join('')}
+          </div>
+
+          <!-- Simulated Industry Dashboard Content -->
+          <div class="p-6 sm:p-8 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              ${v.kpis.map(k => `
+                <div class="p-5 rounded-2xl bg-white border shadow-sm" style="border-color: ${v.primary}20;">
+                  <div class="text-[11px] uppercase tracking-wider opacity-65 font-sans font-semibold">${k.label}</div>
+                  <div class="text-2xl font-bold mt-1" style="color: ${v.primary};">${k.value}</div>
+                  <div class="text-xs mt-1 font-sans font-medium" style="color: ${v.accent};">${k.delta}</div>
+                </div>
+              `).join('')}
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6" style="border-color: ${v.primary}20;">
+              <div class="space-y-2 max-w-2xl">
+                <div class="text-xs font-sans font-bold uppercase tracking-wider" style="color: ${v.accent};">Domain Architecture &amp; Target Organisations</div>
+                <h3 class="text-lg font-bold" style="color: ${v.primary};">${v.target}</h3>
+                <div class="flex flex-wrap gap-2 pt-2 font-sans">
+                  ${v.modules.map(m => `
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold border" style="background-color: ${v.surface}; border-color: ${v.primary}30; color: ${v.primary};">
+                      ✓ ${m}
+                    </span>
+                  `).join('')}
+                </div>
+              </div>
+              <div class="font-sans shrink-0">
+                ${v.isLive
+                  ? `<button onclick="switchExperience('hospitality')" class="px-5 py-3 rounded-xl text-white font-bold text-xs shadow-md cursor-pointer" style="background-color: ${v.primary};">Enter Working Hospitality MVP</button>`
+                  : `<div class="p-3.5 rounded-xl bg-slate-100 text-slate-600 text-xs max-w-xs">
+                      <strong>Roadmap Transparency:</strong> Scheduled after Hospitality MVP production sign-off. Multi-tenant database schema prepared.
+                    </div>`
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function selectVerticalPreview(id) {
+      appState.selectedVerticalPreviewId = id;
+      saveState();
+      renderVerticalsShowcase();
+    }
+
+    // -----------------------------------------------------------------------
+    // 8. PLATFORM SUPER ADMIN CONTROL CENTRE
+    // -----------------------------------------------------------------------
+    function renderSuperAdmin() {
+      const kpiBox = document.getElementById('superAdminKpis');
+      const table = document.getElementById('superAdminTenantsTable');
+      const logList = document.getElementById('auditLogList');
+      if (!kpiBox || !table || !logList) return;
+
+      kpiBox.innerHTML = `
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="text-xs text-slate-500 font-semibold">Registered Tenants</div>
+          <div class="text-2xl font-extrabold text-[#101C32] mt-1">${appState.tenants.length}</div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="text-xs text-slate-500 font-semibold">Active Properties / Branches</div>
+          <div class="text-2xl font-extrabold text-[#276EF1] mt-1">${appState.properties.length + 7}</div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="text-xs text-slate-500 font-semibold">Row-Level Tenant Isolation</div>
+          <div class="text-2xl font-extrabold text-[#16B8A6] mt-1">100% Enforced</div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="text-xs text-slate-500 font-semibold">Recorded Audit Events</div>
+          <div class="text-2xl font-extrabold text-[#101C32] mt-1">${appState.auditLogs.length}</div>
+        </div>
+      `;
+
+      table.innerHTML = appState.tenants.map(t => `
+        <tr class="hover:bg-slate-50">
+          <td class="py-4 px-5">
+            <div class="font-bold text-[#101C32]">${t.name}</div>
+            <div class="text-[11px] font-mono text-slate-500">${t.id} • ${t.adminEmail}</div>
+          </td>
+          <td class="py-4 px-5 font-semibold text-slate-700">${t.industry}</td>
+          <td class="py-4 px-5">
+            <span class="font-bold text-[#276EF1]">${t.plan}</span>
+            <span class="block text-[11px] text-slate-500">Branches: ${t.branches} • Users: ${t.users}</span>
+          </td>
+          <td class="py-4 px-5">
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${t.status === 'Active' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">
+              ${t.status}
+            </span>
+          </td>
+          <td class="py-4 px-5 text-right">
+            <button onclick="toggleTenantStatus('${t.id}')" class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-slate-100 transition cursor-pointer">
+              ${t.status === 'Suspended' ? 'Reactivate' : 'Suspend'}
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      logList.innerHTML = appState.auditLogs.map(log => `
+        <div class="px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-1 hover:bg-slate-50">
+          <div>
+            <span class="text-[#276EF1] font-semibold">[${log.tenant}]</span>
+            <span class="text-slate-800 ml-1">${log.action}</span>
+          </div>
+          <div class="text-[11px] text-slate-400 shrink-0">${log.actor} • ${log.time}</div>
+        </div>
+      `).join('');
+    }
+
+    function toggleTenantStatus(tenantId) {
+      const tenant = appState.tenants.find(t => t.id === tenantId);
+      if (!tenant) return;
+      tenant.status = tenant.status === 'Suspended' ? 'Active' : 'Suspended';
+      saveState();
+      appendAuditLog('superadmin@nexora.cloud', tenant.id, `TENANT_STATUS_CHANGED: ${tenant.name} -> ${tenant.status}`);
+      showToast(`Tenant ${tenant.name} is now ${tenant.status}.`, 'warning');
+    }
+
+    // -----------------------------------------------------------------------
+    // 9. INITIALIZE APPLICATION ON WINDOW LOAD
+    // -----------------------------------------------------------------------
+    function renderAll() {
+      renderCorporateVerticals();
+      renderHospitality();
+      renderVerticalsShowcase();
+      renderSuperAdmin();
+    }
+
+    window.onload = function () {
+      renderAll();
+    };
+  </script>
+</body>
+</html>
